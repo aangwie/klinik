@@ -48,7 +48,7 @@
                         // Filter menu based on role
                         $roleMenus = [
                             'admin' => ['Dashboard', 'Pendaftaran', 'Antrean', 'Pemeriksaan', 'Pembayaran', 'Apotek', 'Obat', 'Rekam Medis', 'Laporan', 'Jasa/Tindakan', 'Pengguna'],
-                            'pendaftaran' => ['Dashboard', 'Pendaftaran'],
+                            'pendaftaran' => ['Dashboard', 'Pendaftaran', 'Antrean'],
                             'dokter' => ['Dashboard', 'Antrean', 'Pemeriksaan', 'Rekam Medis'],
                             'kasir' => ['Dashboard', 'Pembayaran'],
                             'apoteker' => ['Dashboard', 'Apotek', 'Obat'],

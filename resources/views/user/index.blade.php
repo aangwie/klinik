@@ -21,7 +21,7 @@
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="datatable w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500 border-b border-gray-200">
                         <th class="pb-3 font-medium px-2">Nama</th>
@@ -46,20 +46,8 @@
                         <td class="py-4 px-2 font-mono text-gray-600">{{ $user->username }}</td>
                         <td class="py-4 px-2">
                             @php
-                                $roleColors = [
-                                    'admin' => 'bg-red-100 text-red-800',
-                                    'pendaftaran' => 'bg-emerald-100 text-emerald-800',
-                                    'dokter' => 'bg-blue-100 text-blue-800',
-                                    'kasir' => 'bg-amber-100 text-amber-800',
-                                    'apoteker' => 'bg-purple-100 text-purple-800',
-                                ];
-                                $roleLabels = [
-                                    'admin' => 'Admin',
-                                    'pendaftaran' => 'Pendaftaran',
-                                    'dokter' => 'Dokter',
-                                    'kasir' => 'Kasir',
-                                    'apoteker' => 'Apoteker',
-                                ];
+                                $roleColors = ['admin'=>'bg-red-100 text-red-800','pendaftaran'=>'bg-emerald-100 text-emerald-800','dokter'=>'bg-blue-100 text-blue-800','kasir'=>'bg-amber-100 text-amber-800','apoteker'=>'bg-purple-100 text-purple-800'];
+                                $roleLabels = ['admin'=>'Admin','pendaftaran'=>'Pendaftaran','dokter'=>'Dokter','kasir'=>'Kasir','apoteker'=>'Apoteker'];
                             @endphp
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800' }}">
                                 {{ $roleLabels[$user->role] ?? ucfirst($user->role) }}
@@ -97,34 +85,26 @@
 <div id="userModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <h3 id="modalTitle" class="text-lg font-semibold text-gray-800 mb-6">Tambah Pengguna</h3>
-
         <form id="userForm" method="POST" class="space-y-4">
             @csrf
             <input type="hidden" name="_method" id="methodField" value="POST">
             <input type="hidden" name="user_id" id="userId">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                <input type="text" name="name" id="userName" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                    placeholder="Nama pengguna">
+                <input type="text" name="name" id="userName" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Nama pengguna">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
-                <input type="text" name="username" id="userUsername" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                    placeholder="Username untuk login">
+                <input type="text" name="username" id="userUsername" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Username untuk login">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500" id="passRequired">*</span></label>
-                <input type="password" name="password" id="userPassword" minlength="6"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                    placeholder="Minimal 6 karakter">
+                <input type="password" name="password" id="userPassword" minlength="6" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Minimal 6 karakter">
                 <p class="text-xs text-gray-400 mt-1" id="passHelp">Kosongkan jika tidak ingin mengubah password</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Role <span class="text-red-500">*</span></label>
-                <select name="role" id="userRole" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                <select name="role" id="userRole" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
                     <option value="">Pilih Role</option>
                     <option value="admin">Admin</option>
                     <option value="pendaftaran">Pendaftaran</option>
@@ -134,10 +114,8 @@
                 </select>
             </div>
             <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeModal()"
-                    class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">Batal</button>
-                <button type="submit"
-                    class="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-emerald-200">Simpan</button>
+                <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-emerald-200">Simpan</button>
             </div>
         </form>
     </div>
@@ -160,30 +138,26 @@
         document.getElementById('userModal').classList.remove('hidden');
         document.getElementById('userModal').classList.add('flex');
     }
-
     function closeModal() {
         document.getElementById('userModal').classList.add('hidden');
         document.getElementById('userModal').classList.remove('flex');
     }
-
     function editUser(id) {
-        fetch(`/user/${id}/edit`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('modalTitle').textContent = 'Edit Pengguna';
-                document.getElementById('userForm').action = `/user/${id}`;
-                document.getElementById('methodField').value = 'PUT';
-                document.getElementById('userId').value = id;
-                document.getElementById('userName').value = data.name;
-                document.getElementById('userUsername').value = data.username;
-                document.getElementById('userPassword').value = '';
-                document.getElementById('userPassword').required = false;
-                document.getElementById('passRequired').style.display = 'none';
-                document.getElementById('passHelp').textContent = 'Kosongkan jika tidak ingin mengubah password';
-                document.getElementById('userRole').value = data.role;
-                document.getElementById('userModal').classList.remove('hidden');
-                document.getElementById('userModal').classList.add('flex');
-            });
+        fetch(`/user/${id}/edit`).then(res => res.json()).then(data => {
+            document.getElementById('modalTitle').textContent = 'Edit Pengguna';
+            document.getElementById('userForm').action = `/user/${id}`;
+            document.getElementById('methodField').value = 'PUT';
+            document.getElementById('userId').value = id;
+            document.getElementById('userName').value = data.name;
+            document.getElementById('userUsername').value = data.username;
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userPassword').required = false;
+            document.getElementById('passRequired').style.display = 'none';
+            document.getElementById('passHelp').textContent = 'Kosongkan jika tidak ingin mengubah password';
+            document.getElementById('userRole').value = data.role;
+            document.getElementById('userModal').classList.remove('hidden');
+            document.getElementById('userModal').classList.add('flex');
+        });
     }
 </script>
 @endpush

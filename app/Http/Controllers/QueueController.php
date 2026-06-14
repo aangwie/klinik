@@ -25,4 +25,22 @@ class QueueController extends Controller
         return redirect()->route('queue.index')
             ->with('success', "Pasien {$queue->patient->name} dipanggil");
     }
+
+    public function cancel($id)
+    {
+        $queue = Queue::findOrFail($id);
+
+        if (!in_array($queue->status, ['menunggu', 'dipanggil'])) {
+            return redirect()->route('queue.index')
+                ->with('error', 'Antrean dengan status "' . $queue->status . '" tidak dapat dibatalkan');
+        }
+
+        $patientName = $queue->patient->name;
+        $queueNumber = $queue->queue_number;
+
+        $queue->update(['status' => 'batal']);
+
+        return redirect()->route('queue.index')
+            ->with('success', "Antrean {$queueNumber} atas nama {$patientName} berhasil dibatalkan");
+    }
 }

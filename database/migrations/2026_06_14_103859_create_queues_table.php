@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('queue_number', 10); // A001
             $table->foreignId('patient_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['menunggu', 'dipanggil', 'diperiksa', 'selesai'])->default('menunggu');
+            $table->enum('status', ['menunggu', 'dipanggil', 'diperiksa', 'selesai', 'batal'])->default('menunggu');
             $table->date('date');
             $table->timestamps();
         });

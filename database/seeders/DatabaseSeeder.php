@@ -99,6 +99,25 @@ class DatabaseSeeder extends Seeder
             Medicine::create($medicine);
         }
 
+        // Create sample patient
+        $patient = \App\Models\Patient::create([
+            'medical_record_number' => 'RM' . now()->format('Y') . '000001',
+            'nik' => '1234567890123456',
+            'name' => 'Budi Santoso',
+            'birth_date' => '1990-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'address' => 'Jl. Merdeka No. 1, Jakarta',
+        ]);
+
+        // Create sample queue for today
+        \App\Models\Queue::create([
+            'queue_number' => 'A001',
+            'patient_id' => $patient->id,
+            'status' => 'menunggu',
+            'date' => now()->format('Y-m-d'),
+        ]);
+
         $this->command->info('Database seeded successfully!');
         $this->command->info('Login credentials:');
         $this->command->info('Admin: admin / admin123');

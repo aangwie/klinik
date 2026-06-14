@@ -109,16 +109,17 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tindakan</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                @forelse($serviceActions as $sa)
-                                <label class="flex items-center gap-2 p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                                    <input type="checkbox" name="actions[]" value="{{ $sa->id }}" class="text-emerald-600 focus:ring-emerald-500 rounded">
-                                    <span class="text-sm text-gray-700">{{ $sa->name }} <span class="text-emerald-600 font-medium">(Rp {{ number_format($sa->price, 0, ',', '.') }})</span></span>
-                                </label>
-                                @empty
-                                <p class="text-sm text-gray-400 col-span-2">Belum ada tindakan tersedia</p>
-                                @endforelse
+                            <div class="ts-wrapper-green">
+                                <select id="actionSelect" name="actions[]" multiple placeholder="Pilih tindakan..." autocomplete="off">
+                                    @forelse($serviceActions as $sa)
+                                    <option value="{{ $sa->id }}">{{ $sa->name }}@if(Auth::user()->role == 'admin') (Rp {{ number_format($sa->price, 0, ',', '.') }})@endif</option>
+                                    @empty
+                                    @endforelse
+                                </select>
                             </div>
+                            @if($serviceActions->isEmpty())
+                            <p class="text-sm text-gray-400 mt-1">Belum ada tindakan tersedia</p>
+                            @endif
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>

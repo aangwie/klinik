@@ -19,14 +19,12 @@
     </div>
 
     @if(session('success'))
-    <div class="bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-lg px-4 py-3 text-sm">
-        {{ session('success') }}
-    </div>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-lg px-4 py-3 text-sm">{{ session('success') }}</div>
     @endif
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="datatable w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500 border-b border-gray-200">
                         <th class="pb-3 font-medium px-2">Kode</th>
@@ -84,7 +82,6 @@
 <div id="medicineModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
         <h3 id="modalTitle" class="text-lg font-semibold text-gray-800 mb-6">Tambah Obat</h3>
-
         <form id="medicineForm" method="POST" class="space-y-4">
             @csrf
             <input type="hidden" name="_method" id="methodField" value="POST">
@@ -105,14 +102,12 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <input type="text" name="category" id="medCategory"
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                        placeholder="Tablet, Sirup, dll">
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Tablet, Sirup, dll">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Satuan</label>
                     <input type="text" name="unit" id="medUnit"
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                        placeholder="botol, strip, dll">
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="botol, strip, dll">
                 </div>
             </div>
             <div>
@@ -153,15 +148,7 @@
         document.getElementById('modalTitle').textContent = 'Tambah Obat';
         document.getElementById('medicineForm').action = '{{ route("medicine.store") }}';
         document.getElementById('methodField').value = 'POST';
-        document.getElementById('medicineId').value = '';
-        document.getElementById('medCode').value = '';
-        document.getElementById('medName').value = '';
-        document.getElementById('medCategory').value = '';
-        document.getElementById('medUnit').value = '';
-        document.getElementById('medStock').value = '';
-        document.getElementById('medPurchasePrice').value = '';
-        document.getElementById('medSellingPrice').value = '';
-        document.getElementById('medExpired').value = '';
+        ['medicineId','medCode','medName','medCategory','medUnit','medStock','medPurchasePrice','medSellingPrice','medExpired'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('medicineModal').classList.remove('hidden');
         document.getElementById('medicineModal').classList.add('flex');
     }
@@ -172,24 +159,22 @@
     }
 
     function editMedicine(id) {
-        fetch(`/medicine/${id}/edit`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('modalTitle').textContent = 'Edit Obat';
-                document.getElementById('medicineForm').action = `/medicine/${id}`;
-                document.getElementById('methodField').value = 'PUT';
-                document.getElementById('medicineId').value = id;
-                document.getElementById('medCode').value = data.code;
-                document.getElementById('medName').value = data.name;
-                document.getElementById('medCategory').value = data.category;
-                document.getElementById('medUnit').value = data.unit;
-                document.getElementById('medStock').value = data.stock;
-                document.getElementById('medPurchasePrice').value = data.purchase_price;
-                document.getElementById('medSellingPrice').value = data.selling_price;
-                document.getElementById('medExpired').value = data.expired_date;
-                document.getElementById('medicineModal').classList.remove('hidden');
-                document.getElementById('medicineModal').classList.add('flex');
-            });
+        fetch(`/medicine/${id}/edit`).then(res => res.json()).then(data => {
+            document.getElementById('modalTitle').textContent = 'Edit Obat';
+            document.getElementById('medicineForm').action = `/medicine/${id}`;
+            document.getElementById('methodField').value = 'PUT';
+            document.getElementById('medicineId').value = id;
+            document.getElementById('medCode').value = data.code;
+            document.getElementById('medName').value = data.name;
+            document.getElementById('medCategory').value = data.category;
+            document.getElementById('medUnit').value = data.unit;
+            document.getElementById('medStock').value = data.stock;
+            document.getElementById('medPurchasePrice').value = data.purchase_price;
+            document.getElementById('medSellingPrice').value = data.selling_price;
+            document.getElementById('medExpired').value = data.expired_date;
+            document.getElementById('medicineModal').classList.remove('hidden');
+            document.getElementById('medicineModal').classList.add('flex');
+        });
     }
 </script>
 @endpush

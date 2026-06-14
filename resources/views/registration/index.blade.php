@@ -8,6 +8,32 @@
         <h2 class="text-2xl font-bold text-gray-800">Pendaftaran Pasien</h2>
     </div>
 
+    <!-- Toast Notification -->
+    @if(session('success'))
+    <div id="successToast" class="fixed top-4 right-4 z-[100] transform transition-all duration-500 ease-out translate-x-0">
+        <div class="bg-emerald-600 text-white rounded-xl shadow-2xl shadow-emerald-200/50 p-4 pr-12 max-w-sm relative overflow-hidden">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm">Berhasil!</p>
+                    <p class="text-emerald-100 text-sm mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+            <button onclick="dismissToast()" class="absolute top-3 right-3 text-emerald-200 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <!-- Progress bar -->
+            <div class="absolute bottom-0 left-0 h-1 bg-emerald-400/50 rounded-full toast-progress"></div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Pasien Baru -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -118,6 +144,22 @@
     .patient-result.selected {
         @apply bg-emerald-50 border-emerald-300;
     }
+
+    /* Toast Animation */
+    @keyframes toastSlideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastProgress {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+    #successToast {
+        animation: toastSlideIn 0.4s ease-out;
+    }
+    .toast-progress {
+        animation: toastProgress 5s linear forwards;
+    }
 </style>
 @endpush
 
@@ -170,6 +212,19 @@
         document.getElementById('existingPatientForm').classList.remove('hidden');
         document.getElementById('btnTakeQueue').textContent = `Ambil Antrean - ${name}`;
     }
+
+    // Auto dismiss toast after 5 seconds
+    function dismissToast() {
+        const toast = document.getElementById('successToast');
+        if (toast) {
+            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }
+    }
+
+    // Auto dismiss after animation ends
+    setTimeout(dismissToast, 5000);
 </script>
 @endpush
 @endsection

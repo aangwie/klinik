@@ -6,15 +6,11 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-gray-800">Rekam Medis</h2>
-        <div class="flex gap-2">
-            <input type="text" id="searchRm" placeholder="Cari No. RM / Nama / NIK..."
-                class="px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all w-64 text-sm">
-        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="datatable w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500 border-b border-gray-200">
                         <th class="pb-3 font-medium px-2">No. RM</th>
@@ -38,9 +34,7 @@
                         </td>
                         <td class="py-4 px-2 text-gray-500">{{ $patient->last_examination ? \Carbon\Carbon::parse($patient->last_examination)->format('d/m/Y') : '-' }}</td>
                         <td class="py-4 px-2">
-                            <a href="{{ route('medical-record.show', $patient->id) }}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors inline-block">
-                                Detail
-                            </a>
+                            <a href="{{ route('medical-record.show', $patient->id) }}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors inline-block">Detail</a>
                         </td>
                     </tr>
                     @empty
@@ -53,17 +47,4 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    let searchTimeout;
-    document.getElementById('searchRm')?.addEventListener('keyup', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const q = this.value;
-            window.location.href = `{{ route('medical-record.index') }}?q=${encodeURIComponent(q)}`;
-        }, 500);
-    });
-</script>
-@endpush
 @endsection

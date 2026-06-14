@@ -18,7 +18,7 @@
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="datatable w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500 border-b border-gray-200">
                         <th class="pb-3 font-medium px-2">Nama</th>

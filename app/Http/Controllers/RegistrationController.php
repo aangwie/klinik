@@ -55,7 +55,9 @@ class RegistrationController extends Controller
             'date' => $today,
         ]);
 
-        return redirect()->route('queue.index')
+        $redirectRoute = auth()->user()->role == 'pendaftaran' ? 'registration.index' : 'queue.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Pasien {$patient->name} berhasil didaftarkan. No. Antrean: {$queueNumber}");
     }
 

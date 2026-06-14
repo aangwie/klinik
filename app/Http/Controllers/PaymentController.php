@@ -14,9 +14,6 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        $tab = request()->get('tab', 'total');
-
-        // Doctor payments with prescriptions data
         $doctorPayments = DoctorPayment::with([
             'patient',
             'examination.prescriptions.medicine'
@@ -25,7 +22,6 @@ class PaymentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Calculate medicine costs per doctor payment
         foreach ($doctorPayments as $payment) {
             $medicineTotal = 0;
             if ($payment->examination && $payment->examination->prescriptions) {
@@ -44,51 +40,9 @@ class PaymentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // All payments (combined for "total" tab)
-        $allPayments = collect();
-
-        foreach ($doctorPayments as $dp) {
-            if ($dp->status == 'menunggu') {
-                $allPayments->push((object)[
-                    'id' => $dp->id,
-                    'type' => 'doctor',
-                    'patient' => $dp->patient,
-                    'description' => 'Jasa Dokter' . ($dp->examination && $dp->examination->actions ? ' (' . $dp->examination->actions . ')' : ''),
-                    'doctor_fee' => $dp->total,
-                    'medicine_total' => $dp->medicine_total ?? 0,
-                    'total' => $dp->grand_total ?? $dp->total,
-                    'status' => $dp->status,
-                    'created_at' => $dp->created_at,
-                    'payment_method' => $dp->payment_method,
-                    'invoice_number' => $dp->invoice_number,
-                    'actions' => $dp->examination->actions ?? null,
-                ]);
-            }
-        }
-
-        foreach ($pharmacyPayments as $pp) {
-            if ($pp->status == 'menunggu_pembayaran') {
-                $allPayments->push((object)[
-                    'id' => $pp->id,
-                    'type' => 'pharmacy',
-                    'patient' => $pp->patient,
-                    'description' => 'Obat: ' . ($pp->prescription->medicine->name ?? '-'),
-                    'doctor_fee' => 0,
-                    'medicine_total' => $pp->total,
-                    'total' => $pp->total,
-                    'status' => $pp->status,
-                    'created_at' => $pp->created_at,
-                    'payment_method' => $pp->payment_method,
-                    'receipt_number' => $pp->receipt_number,
-                ]);
-            }
-        }
-
-        $allPayments = $allPayments->sortByDesc('created_at');
-
         $medicines = Medicine::where('stock', '>', 0)->orderBy('name')->get();
 
-        return view('payment.index', compact('tab', 'doctorPayments', 'pharmacyPayments', 'allPayments', 'medicines'));
+        return view('payment.index', compact('doctorPayments', 'pharmacyPayments', 'medicines'));
     }
 
     public function processDoctorPayment(Request $request)
@@ -100,7 +54,6 @@ class PaymentController extends Controller
         ]);
 
         $payment = DoctorPayment::findOrFail($validated['payment_id']);
-
         $invoiceNumber = 'INV/JD/' . now()->format('Ymd') . '/' . str_pad($payment->id, 4, '0', STR_PAD_LEFT);
 
         $payment->update([
@@ -109,7 +62,7 @@ class PaymentController extends Controller
             'invoice_number' => $invoiceNumber,
         ]);
 
-        return redirect()->route('payment.index', ['tab' => 'jasa'])
+        return redirect()->route('payment.index')
             ->with('success', 'Pembayaran jasa dokter berhasil');
     }
 
@@ -122,7 +75,6 @@ class PaymentController extends Controller
         ]);
 
         $sale = PharmacySale::findOrFail($validated['payment_id']);
-
         $receiptNumber = 'RCP/OB/' . now()->format('Ymd') . '/' . str_pad($sale->id, 4, '0', STR_PAD_LEFT);
 
         DB::beginTransaction();
@@ -145,7 +97,7 @@ class PaymentController extends Controller
             return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
         }
 
-        return redirect()->route('payment.index', ['tab' => 'obat'])
+        return redirect()->route('payment.index')
             ->with('success', 'Pembayaran obat berhasil');
     }
 
@@ -158,7 +110,6 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
-            // Process doctor payment
             $doctorPayment = DoctorPayment::findOrFail($validated['doctor_payment_id']);
             $invoiceNumber = 'INV/TOTAL/' . now()->format('Ymd') . '/' . str_pad($doctorPayment->id, 4, '0', STR_PAD_LEFT);
 
@@ -168,15 +119,14 @@ class PaymentController extends Controller
                 'invoice_number' => $invoiceNumber,
             ]);
 
-            // Process all pending pharmacy sales for this patient's examination
             $examinationId = $doctorPayment->examination_id;
             $pendingPrescriptions = Prescription::where('examination_id', $examinationId)
-                ->whereIn('status', ['menunggu_pembayaran'])
+                ->where('status', 'menunggu_pembayaran')
                 ->get();
 
             foreach ($pendingPrescriptions as $prescription) {
                 $pharmacySale = PharmacySale::where('prescription_id', $prescription->id)
-                    ->where('status', 'menunggu_pembayaran')
+                    ->where('status', 'menunggu')
                     ->first();
 
                 if ($pharmacySale) {
@@ -200,7 +150,7 @@ class PaymentController extends Controller
             return back()->with('error', 'Gagal memproses pembayaran total: ' . $e->getMessage());
         }
 
-        return redirect()->route('payment.index', ['tab' => 'total'])
+        return redirect()->route('payment.index')
             ->with('success', 'Pembayaran total berhasil');
     }
 
@@ -221,24 +171,22 @@ class PaymentController extends Controller
             'total' => $total,
         ]);
 
-        return redirect()->route('payment.index', ['tab' => 'jasa'])
+        return redirect()->route('payment.index')
             ->with('success', 'Biaya jasa dokter berhasil diperbarui');
     }
 
     public function printStruk($type, $id)
     {
         if ($type == 'doctor') {
-            $payment = DoctorPayment::with(['patient', 'examination'])->findOrFail($id);
+            $payment = DoctorPayment::with(['patient', 'examination.prescriptions.medicine'])->findOrFail($id);
         } elseif ($type == 'pharmacy') {
             $payment = PharmacySale::with(['patient', 'prescription.medicine'])->findOrFail($id);
         } else {
-            // Total struk - doctor payment with prescriptions
             $payment = DoctorPayment::with([
                 'patient',
                 'examination.prescriptions.medicine'
             ])->findOrFail($id);
 
-            // Calculate medicine total
             $medicineTotal = 0;
             $medicineDetails = [];
             if ($payment->examination && $payment->examination->prescriptions) {
@@ -261,6 +209,62 @@ class PaymentController extends Controller
         }
 
         return view('payment.struk', compact('payment', 'type'));
+    }
+
+    public function getDetail($id)
+    {
+        $payment = DoctorPayment::with([
+            'patient',
+            'examination.prescriptions.medicine'
+        ])->findOrFail($id);
+
+        $medicines = [];
+        $medicineTotal = 0;
+        if ($payment->examination && $payment->examination->prescriptions) {
+            foreach ($payment->examination->prescriptions as $pres) {
+                if ($pres->medicine) {
+                    $subtotal = $pres->qty * $pres->medicine->selling_price;
+                    $medicineTotal += $subtotal;
+                    $medicines[] = [
+                        'name' => $pres->medicine->name,
+                        'qty' => $pres->qty,
+                        'price' => $pres->medicine->selling_price,
+                        'subtotal' => $subtotal,
+                    ];
+                }
+            }
+        }
+
+        $pharmacyPayments = [];
+        if ($payment->examination) {
+            $prescriptionIds = $payment->examination->prescriptions->pluck('id');
+            $pharmacyPayments = PharmacySale::whereIn('prescription_id', $prescriptionIds)
+                ->get()
+                ->map(function ($sale) {
+                    return [
+                        'total' => $sale->total,
+                        'status' => $sale->status,
+                        'medicine_name' => $sale->prescription->medicine->name ?? '-',
+                    ];
+                });
+        }
+
+        return response()->json([
+            'patient' => [
+                'name' => $payment->patient->name ?? '-',
+                'medical_record_number' => $payment->patient->medical_record_number ?? '-',
+            ],
+            'consultation_fee' => (int) $payment->consultation_fee,
+            'action_fee' => (int) $payment->action_fee,
+            'total' => (int) $payment->total,
+            'actions' => $payment->examination->actions ?? null,
+            'medicines' => $medicines,
+            'medicine_total' => $medicineTotal,
+            'grand_total' => $payment->total + $medicineTotal,
+            'status' => $payment->status,
+            'payment_method' => $payment->payment_method,
+            'pharmacy_payments' => $pharmacyPayments,
+        ]);
     }
 
     public function getEditFee($id)

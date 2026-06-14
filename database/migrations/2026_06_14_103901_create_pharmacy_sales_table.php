@@ -15,7 +15,7 @@ return new class extends Migration
             $table->decimal('total', 12, 0)->default(0);
             $table->enum('payment_method', ['tunai', 'qris', 'transfer', 'debit'])->nullable();
             $table->enum('status', ['menunggu', 'lunas'])->default('menunggu');
-            $table->string('receipt_number', 20)->nullable()->unique();
+            $table->string('receipt_number', 50)->nullable()->unique();
             $table->timestamps();
         });
     }

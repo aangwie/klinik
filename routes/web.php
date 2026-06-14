@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
     // Queue (Antrean)
     Route::get('/queue', [QueueController::class, 'index'])->name('queue.index');
     Route::post('/queue/{id}/call', [QueueController::class, 'call'])->name('queue.call');
+    Route::post('/queue/{id}/cancel', [QueueController::class, 'cancel'])->name('queue.cancel');
 
     // Examination (Pemeriksaan)
     Route::get('/examination', [ExaminationController::class, 'index'])->name('examination.index');
@@ -47,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/doctor/process', [PaymentController::class, 'processDoctorPayment'])->name('payment.doctor.process');
     Route::post('/payment/pharmacy/process', [PaymentController::class, 'processPharmacyPayment'])->name('payment.pharmacy.process');
     Route::post('/payment/total/process', [PaymentController::class, 'processTotalPayment'])->name('payment.total.process');
+    Route::get('/payment/detail/{id}', [PaymentController::class, 'getDetail'])->name('payment.detail');
     Route::get('/payment/doctor/fee/{id}/edit', [PaymentController::class, 'getEditFee'])->name('payment.fee.edit');
     Route::put('/payment/doctor/fee/{id}', [PaymentController::class, 'updateDoctorPaymentFee'])->name('payment.fee.update');
     Route::get('/payment/{type}/struk/{id}', [PaymentController::class, 'printStruk'])->name('payment.struk');
