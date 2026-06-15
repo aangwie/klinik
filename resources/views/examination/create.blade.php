@@ -137,13 +137,15 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Nama Obat</label>
-                                    <select name="medicines[0][id]"
-                                        class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm">
-                                        <option value="">-- Pilih Obat --</option>
-                                        @foreach($medicines ?? [] as $m)
-                                        <option value="{{ $m->id }}">{{ $m->name }} (Stok: {{ $m->stock }})</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="medicine-select-wrapper">
+                                        <select name="medicines[0][id]"
+                                            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm medicine-select">
+                                            <option value="">-- Pilih Obat --</option>
+                                            @foreach($medicines ?? [] as $m)
+                                            <option value="{{ $m->id }}">{{ $m->name }} (Stok: {{ $m->stock }})</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah</label>
@@ -185,6 +187,31 @@
 @push('scripts')
 <script>
     let medIndex = 1;
+
+    // Initialize TomSelect on initial medicine select
+    document.addEventListener('DOMContentLoaded', function() {
+        initMedicineSelects();
+    });
+
+    function initMedicineSelects() {
+        document.querySelectorAll('.medicine-select:not(.tomselected)').forEach(function(el) {
+            new TomSelect(el, {
+                create: false,
+                sortField: { field: 'text', direction: 'asc' },
+                placeholder: 'Ketik nama obat...',
+                maxOptions: 50,
+                render: {
+                    option: function(data, escape) {
+                        return '<div class="py-1.5 px-2 text-sm hover:bg-emerald-50">' + escape(data.text) + '</div>';
+                    },
+                    item: function(data, escape) {
+                        return '<div class="py-0.5 text-sm">' + escape(data.text) + '</div>';
+                    }
+                }
+            });
+        });
+    }
+
     function addPrescription() {
         const container = document.getElementById('prescriptions');
         const div = document.createElement('div');
@@ -193,12 +220,14 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Nama Obat</label>
-                    <select name="medicines[${medIndex}][id]" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm">
-                        <option value="">-- Pilih Obat --</option>
-                        @foreach($medicines ?? [] as $m)
-                        <option value="{{ $m->id }}">{{ $m->name }} (Stok: {{ $m->stock }})</option>
-                        @endforeach
-                    </select>
+                    <div class="medicine-select-wrapper">
+                        <select name="medicines[${medIndex}][id]" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm medicine-select">
+                            <option value="">-- Pilih Obat --</option>
+                            @foreach($medicines ?? [] as $m)
+                            <option value="{{ $m->id }}">{{ $m->name }} (Stok: {{ $m->stock }})</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah</label>
@@ -212,6 +241,8 @@
             <button type="button" onclick="this.parentElement.remove()" class="mt-2 text-xs text-red-500 hover:text-red-700 font-medium">Hapus</button>
         `;
         container.appendChild(div);
+        // Initialize TomSelect on the newly added select
+        initMedicineSelects();
         medIndex++;
     }
 </script>

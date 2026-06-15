@@ -2,7 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Struk Pembayaran</title>
+    <title>Struk Pembayaran - {{ \App\Models\Setting::getAppName() }}</title>
+    @php
+        $appName = \App\Models\Setting::getAppName();
+        $appLogoBase64 = \App\Models\Setting::getAppLogoBase64();
+    @endphp
+    @if($appLogoBase64)
+    <link rel="icon" href="{{ $appLogoBase64 }}" type="image/png">
+    @endif
     <style>
         body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 20px; }
         .struk { max-width: 300px; margin: 0 auto; }
@@ -24,7 +31,10 @@
 <body>
     <div class="struk">
         <div class="header">
-            <h2>KLINIK SEHAT</h2>
+            @if($appLogoBase64)
+            <img src="{{ $appLogoBase64 }}" alt="Logo" style="max-width:60px; max-height:60px; margin-bottom:5px;">
+            @endif
+            <h2>{{ strtoupper($appName) }}</h2>
             <p>Praktik Dokter Umum</p>
             <p>{{ now()->isoFormat('dddd, D MMMM Y') }}</p>
             <p>{{ now()->format('H:i') }} WIB</p>

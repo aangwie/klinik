@@ -72,6 +72,43 @@
         </div>
     </div>
 
+    <!-- Alert: Expiring Medicines & Low Stock -->
+    @php
+        $hasAlerts = ($expiringMedicines ?? [])->count() > 0 || ($lowStockMedicines ?? [])->count() > 0;
+    @endphp
+
+    @if($hasAlerts)
+    <div class="space-y-3">
+        @if(($lowStockMedicines ?? [])->count() > 0)
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+                <p class="text-sm text-amber-800 font-medium">
+                    ⚠️ {{ count($lowStockMedicines) }} obat dengan stok menipis. 
+                    <a href="{{ route('medicine.index') }}" class="underline hover:text-amber-900">Lihat detail</a>
+                </p>
+            </div>
+        </div>
+        @endif
+
+        @if(($expiringMedicines ?? [])->count() > 0)
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-sm text-red-800 font-medium">
+                    🚨 {{ count($expiringMedicines) }} obat akan expired dalam 6 bulan. 
+                    <a href="{{ route('report.index', ['period' => 'harian']) }}#analysis" class="underline hover:text-red-900">Cek di Laporan</a>
+                </p>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Recent Visits -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -132,11 +169,11 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-800">{{ $medicine->name ?? '-' }}</p>
+                            <p class="font-medium text-gray-800">{{ $medicine->medicine->name ?? '-' }}</p>
                             <p class="text-xs text-gray-500">{{ $medicine->total_sold ?? 0 }} terjual</p>
                         </div>
                     </div>
-                    <span class="text-sm font-semibold text-emerald-600">Rp {{ number_format($medicine->selling_price ?? 0, 0, ',', '.') }}</span>
+                    <span class="text-sm font-semibold text-emerald-600">Rp {{ number_format($medicine->medicine->selling_price ?? 0, 0, ',', '.') }}</span>
                 </div>
                 @empty
                 <p class="text-center text-gray-400 py-8">Belum ada data obat terlaris</p>
@@ -144,5 +181,47 @@
             </div>
         </div>
     </div>
+
+    <!-- Expiring Medicines Table -->
+    @if(($expiringMedicines ?? [])->count() > 0)
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">⏰ Obat Akan Expired</h3>
+            <a href="{{ route('report.index', ['period' => 'harian']) }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">Lihat Semua →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-gray-500 border-b border-gray-200">
+                        <th class="pb-3 font-medium">Nama Obat</th>
+                        <th class="pb-3 font-medium text-right">Stok</th>
+                        <th class="pb-3 font-medium text-right">Tgl. Expired</th>
+                        <th class="pb-3 font-medium text-right">Sisa Waktu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($expiringMedicines as $m)
+                    @php
+                        $daysLeft = (int) ceil(now()->diffInDays($m->expired_date, false));
+                        $isUrgent = $daysLeft <= 30;
+                    @endphp
+                    <tr class="border-b border-gray-50">
+                        <td class="py-3 text-gray-800 font-medium">{{ $m->name }}</td>
+                        <td class="py-3 text-gray-800 text-right">{{ $m->stock }}</td>
+                        <td class="py-3 text-right {{ $isUrgent ? 'text-red-600 font-semibold' : 'text-gray-600' }}">{{ $m->expired_date->format('d/m/Y') }}</td>
+                        <td class="py-3 text-right">
+                            @if($isUrgent)
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ $daysLeft }} hari</span>
+                            @else
+                            <span class="text-xs text-gray-500">{{ $daysLeft }} hari lagi</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection

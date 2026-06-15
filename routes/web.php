@@ -14,6 +14,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServiceActionController;
 use App\Http\Controllers\DoctorProfileController;
+use App\Http\Controllers\SettingController;
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
@@ -100,6 +101,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/user/{id}/edit', [UserController::class, 'edit'])->name('user.edit');
         Route::put('/user/{id}', [UserController::class, 'update'])->name('user.update');
         Route::delete('/user/{id}', [UserController::class, 'destroy'])->name('user.destroy');
+    });
+
+    // Settings (Pengaturan Website) - Admin only
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
+        Route::put('/setting', [SettingController::class, 'update'])->name('setting.update');
     });
 
     // Redirect root to dashboard

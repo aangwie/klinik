@@ -9,6 +9,8 @@ use App\Models\Examination;
 use App\Models\DoctorPayment;
 use App\Models\PharmacySale;
 use App\Models\Prescription;
+use App\Models\Medicine;
+use App\Models\ServiceAction;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -40,6 +42,12 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Obat yang akan expired (6 bulan ke depan)
+        $expiringMedicines = Medicine::expiringSoon(6)->take(10)->get();
+
+        // Obat dengan stok menipis (stok <= low_stock)
+        $lowStockMedicines = Medicine::lowStock()->take(10)->get();
+
         return view('dashboard.index', compact(
             'totalPatientsToday',
             'newPatientsToday',
@@ -47,7 +55,9 @@ class DashboardController extends Controller
             'queueWaiting',
             'totalPatients',
             'recentVisits',
-            'topMedicines'
+            'topMedicines',
+            'expiringMedicines',
+            'lowStockMedicines'
         ));
     }
 }

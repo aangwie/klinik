@@ -27,7 +27,13 @@ class ExaminationController extends Controller
     public function create($patientId)
     {
         $patient = Patient::findOrFail($patientId);
-        $medicines = Medicine::where('stock', '>', 0)->orderBy('name')->get();
+        $medicines = Medicine::where('stock', '>', 0)
+            ->where(function($q) {
+                $q->whereNull('expired_date')
+                  ->orWhere('expired_date', '>=', now());
+            })
+            ->orderBy('name')
+            ->get();
         $serviceActions = ServiceAction::where('is_active', true)->orderBy('name')->get();
 
         return view('examination.create', compact('patient', 'medicines', 'serviceActions'));

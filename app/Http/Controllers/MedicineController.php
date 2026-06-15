@@ -21,6 +21,7 @@ class MedicineController extends Controller
             'category' => 'nullable|string|max:50',
             'unit' => 'nullable|string|max:20',
             'stock' => 'nullable|integer|min:0',
+            'low_stock' => 'nullable|integer|min:1',
             'purchase_price' => 'nullable|integer|min:0',
             'selling_price' => 'required|integer|min:0',
             'expired_date' => 'nullable|date',
@@ -48,6 +49,7 @@ class MedicineController extends Controller
             'category' => 'nullable|string|max:50',
             'unit' => 'nullable|string|max:20',
             'stock' => 'nullable|integer|min:0',
+            'low_stock' => 'nullable|integer|min:1',
             'purchase_price' => 'nullable|integer|min:0',
             'selling_price' => 'required|integer|min:0',
             'expired_date' => 'nullable|date',
@@ -81,7 +83,7 @@ class MedicineController extends Controller
         $callback = function() use ($medicines) {
             $file = fopen('php://output', 'w');
             fprintf($file, "\xEF\xBB\xBF"); // BOM for UTF-8
-            fputcsv($file, ['Kode', 'Nama Obat', 'Kategori', 'Satuan', 'Stok', 'Harga Beli', 'Harga Jual', 'Expired']);
+            fputcsv($file, ['Kode', 'Nama Obat', 'Kategori', 'Satuan', 'Stok', 'Min. Stok', 'Harga Beli', 'Harga Jual', 'Expired']);
 
             foreach ($medicines as $m) {
                 fputcsv($file, [
@@ -90,6 +92,7 @@ class MedicineController extends Controller
                     $m->category,
                     $m->unit,
                     $m->stock,
+                    $m->low_stock,
                     $m->purchase_price,
                     $m->selling_price,
                     $m->expired_date ? $m->expired_date->format('d/m/Y') : '',

@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Rekam Medis - {{ $patient->name }}</title>
+    @php
+        $appName = \App\Models\Setting::getAppName();
+        $appLogoBase64 = \App\Models\Setting::getAppLogoBase64();
+    @endphp
+    @if($appLogoBase64)
+    <link rel="icon" href="{{ $appLogoBase64 }}" type="image/png">
+    @endif
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; margin: 40px; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #059669; padding-bottom: 15px; }
         .header h1 { margin: 0; font-size: 18px; color: #059669; }
         .header p { margin: 3px 0; color: #666; }
+        .header img { max-width: 50px; max-height: 50px; margin-bottom: 5px; }
         .patient-info { margin-bottom: 20px; padding: 10px; background: #f9fafb; }
         .patient-info table { width: 100%; }
         .patient-info td { padding: 3px 10px; }
@@ -21,7 +29,10 @@
 </head>
 <body>
     <div class="header">
-        <h1>KLINIK SEHAT</h1>
+        @if($appLogoBase64)
+        <img src="{{ $appLogoBase64 }}" alt="Logo">
+        @endif
+        <h1>{{ strtoupper($appName) }}</h1>
         <p>Praktik Dokter Umum</p>
         <p>REKAM MEDIS PASIEN</p>
     </div>

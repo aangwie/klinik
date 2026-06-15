@@ -32,6 +32,8 @@
                         <th class="pb-3 font-medium px-2">Kategori</th>
                         <th class="pb-3 font-medium px-2">Satuan</th>
                         <th class="pb-3 font-medium px-2">Stok</th>
+                        <th class="pb-3 font-medium px-2">Min. Stok</th>
+                        <th class="pb-3 font-medium px-2">Status</th>
                         <th class="pb-3 font-medium px-2">Harga Beli</th>
                         <th class="pb-3 font-medium px-2">Harga Jual</th>
                         <th class="pb-3 font-medium px-2">Expired</th>
@@ -40,15 +42,30 @@
                 </thead>
                 <tbody>
                     @forelse($medicines ?? [] as $medicine)
-                    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    @php
+                        $isExpired = $medicine->expired_date && $medicine->expired_date < now();
+                        $isExpiringSoon = $medicine->expired_date && !$isExpired && $medicine->expired_date <= now()->addMonths(6);
+                        $rowClass = $isExpired ? 'bg-red-50 hover:bg-red-100 border-b border-red-100' : ($isExpiringSoon ? 'bg-amber-50 hover:bg-amber-100 border-b border-amber-100' : 'border-b border-gray-50 hover:bg-gray-50');
+                    @endphp
+                    <tr class="{{ $rowClass }} transition-colors">
                         <td class="py-4 px-2 font-mono text-gray-600">{{ $medicine->code }}</td>
                         <td class="py-4 px-2 font-medium text-gray-800">{{ $medicine->name }}</td>
                         <td class="py-4 px-2 text-gray-600">{{ $medicine->category }}</td>
                         <td class="py-4 px-2 text-gray-600">{{ $medicine->unit }}</td>
                         <td class="py-4 px-2">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ $medicine->stock <= 5 ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800' }}">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ $medicine->stock <= $medicine->low_stock ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800' }}">
                                 {{ $medicine->stock }}
                             </span>
+                        </td>
+                        <td class="py-4 px-2 text-gray-500 text-center">{{ $medicine->low_stock }}</td>
+                        <td class="py-4 px-2">
+                            @if($medicine->stock <= 0)
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Habis</span>
+                            @elseif($medicine->stock <= $medicine->low_stock)
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Menipis</span>
+                            @else
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Aman</span>
+                            @endif
                         </td>
                         <td class="py-4 px-2 text-gray-600">Rp {{ number_format($medicine->purchase_price, 0, ',', '.') }}</td>
                         <td class="py-4 px-2 font-semibold text-gray-800">Rp {{ number_format($medicine->selling_price, 0, ',', '.') }}</td>
@@ -69,7 +86,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="py-12 text-center text-gray-400">Belum ada data obat</td>
+                        <td colspan="11" class="py-12 text-center text-gray-400">Belum ada data obat</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -110,10 +127,18 @@
                         class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="botol, strip, dll">
                 </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Stok</label>
-                <input type="number" name="stock" id="medStock" min="0"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stok</label>
+                    <input type="number" name="stock" id="medStock" min="0"
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Min. Stok</label>
+                    <p class="text-xs text-gray-400 mb-1">Alert stok menipis jika ≤ nilai ini</p>
+                    <input type="number" name="low_stock" id="medLowStock" min="1" value="10"
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -128,7 +153,7 @@
                 </div>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Expired</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Expired <span class="text-red-500">*</span></label>
                 <input type="date" name="expired_date" id="medExpired"
                     class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
             </div>
@@ -148,6 +173,7 @@
         document.getElementById('modalTitle').textContent = 'Tambah Obat';
         document.getElementById('medicineForm').action = '{{ route("medicine.store") }}';
         document.getElementById('methodField').value = 'POST';
+        document.getElementById('medLowStock').value = 10;
         ['medicineId','medCode','medName','medCategory','medUnit','medStock','medPurchasePrice','medSellingPrice','medExpired'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('medicineModal').classList.remove('hidden');
         document.getElementById('medicineModal').classList.add('flex');
@@ -169,6 +195,7 @@
             document.getElementById('medCategory').value = data.category;
             document.getElementById('medUnit').value = data.unit;
             document.getElementById('medStock').value = data.stock;
+            document.getElementById('medLowStock').value = data.low_stock || 10;
             document.getElementById('medPurchasePrice').value = data.purchase_price;
             document.getElementById('medSellingPrice').value = data.selling_price;
             document.getElementById('medExpired').value = data.expired_date;
