@@ -123,7 +123,32 @@ class ExaminationController extends Controller
 
     public function show($id)
     {
-        $examination = Examination::with(['patient', 'doctor', 'prescriptions.medicine'])->findOrFail($id);
+        $examination = Examination::with(['patient', 'doctor', 'prescriptions.medicine', 'doctorPayment'])->findOrFail($id);
         return view('examination.show', compact('examination'));
+    }
+
+    public function updateFee(Request $request, $id)
+    {
+        $examination = Examination::with('doctorPayment')->findOrFail($id);
+
+        if (!$examination->doctorPayment) {
+            return back()->with('error', 'Data pembayaran tidak ditemukan');
+        }
+
+        $validated = $request->validate([
+            'consultation_fee' => 'required|integer|min:0',
+            'action_fee' => 'required|integer|min:0',
+        ]);
+
+        $total = $validated['consultation_fee'] + $validated['action_fee'];
+
+        $examination->doctorPayment->update([
+            'consultation_fee' => $validated['consultation_fee'],
+            'action_fee' => $validated['action_fee'],
+            'total' => $total,
+        ]);
+
+        return redirect()->route('examination.show', $id)
+            ->with('success', 'Biaya konsultasi berhasil diperbarui');
     }
 }

@@ -9,7 +9,7 @@ class QueueController extends Controller
 {
     public function index()
     {
-        $queues = Queue::with('patient')
+        $queues = Queue::with(['patient', 'doctorProfile'])
             ->whereDate('date', now()->format('Y-m-d'))
             ->orderBy('created_at', 'asc')
             ->get();
@@ -42,5 +42,24 @@ class QueueController extends Controller
 
         return redirect()->route('queue.index')
             ->with('success', "Antrean {$queueNumber} atas nama {$patientName} berhasil dibatalkan");
+    }
+
+    public function resetByDate(Request $request)
+    {
+        $request->validate([
+            'reset_date' => 'required|date',
+        ]);
+
+        $date = $request->reset_date;
+
+        // Only delete queues (antrean), not examinations (pemeriksaan/rekam medis)
+        $deleted = Queue::whereDate('date', $date)
+            ->whereIn('status', ['menunggu', 'dipanggil'])
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil mereset {$deleted} antrean pada tanggal " . \Carbon\Carbon::parse($date)->isoFormat('dddd, D MMMM Y'),
+        ]);
     }
 }

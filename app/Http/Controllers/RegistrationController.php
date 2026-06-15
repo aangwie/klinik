@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Patient;
 use App\Models\Queue;
+use App\Models\DoctorProfile;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
 {
     public function index()
     {
-        return view('registration.index');
+        $doctors = DoctorProfile::with('user')->available()->orderBy('full_name')->get();
+        return view('registration.index', compact('doctors'));
     }
 
     public function store(Request $request)
@@ -26,7 +28,6 @@ class RegistrationController extends Controller
                 'occupation' => 'nullable|string|max:100',
             ]);
 
-            // Generate medical record number
             $year = now()->format('Y');
             $lastPatient = Patient::whereYear('created_at', $year)->latest()->first();
             $lastNumber = $lastPatient ? intval(substr($lastPatient->medical_record_number, -6)) : 0;
@@ -41,16 +42,30 @@ class RegistrationController extends Controller
             $patient = Patient::findOrFail($request->patient_id);
         }
 
-        // Generate queue number
+        $request->validate([
+            'doctor_profile_id' => 'required|exists:doctor_profiles,id',
+        ]);
+
+        $doctorProfile = DoctorProfile::findOrFail($request->doctor_profile_id);
+
+        // Get prefix from doctor's first name initial
+        $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $doctorProfile->full_name), 0, 1));
+        if (!preg_match('/[A-Z]/', $prefix)) $prefix = 'A';
+
+        // Generate queue number with prefix
         $today = now()->format('Y-m-d');
-        $lastQueue = Queue::whereDate('date', $today)->latest()->first();
+        $lastQueue = Queue::whereDate('date', $today)
+            ->where('queue_number', 'like', $prefix . '%')
+            ->latest()
+            ->first();
         $lastQueueNum = $lastQueue ? intval(substr($lastQueue->queue_number, 1)) : 0;
         $newQueueNum = str_pad($lastQueueNum + 1, 3, '0', STR_PAD_LEFT);
-        $queueNumber = 'A' . $newQueueNum;
+        $queueNumber = $prefix . $newQueueNum;
 
         Queue::create([
             'queue_number' => $queueNumber,
             'patient_id' => $patient->id,
+            'doctor_profile_id' => $doctorProfile->id,
             'status' => 'menunggu',
             'date' => $today,
         ]);
@@ -58,7 +73,7 @@ class RegistrationController extends Controller
         $redirectRoute = auth()->user()->role == 'pendaftaran' ? 'registration.index' : 'queue.index';
 
         return redirect()->route($redirectRoute)
-            ->with('success', "Pasien {$patient->name} berhasil didaftarkan. No. Antrean: {$queueNumber}");
+            ->with('success', "Pasien {$patient->name} berhasil didaftarkan ke {$doctorProfile->full_name}. No. Antrean: {$queueNumber}");
     }
 
     public function searchPatients(Request $request)

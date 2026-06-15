@@ -33,4 +33,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Examination::class, 'doctor_id');
     }
+
+    public function doctorProfile()
+    {
+        return $this->hasOne(DoctorProfile::class);
+    }
 }

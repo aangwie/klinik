@@ -11,9 +11,20 @@
     <div class="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-3 text-sm">{{ session('error') }}</div>
     @endif
 
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between flex-wrap gap-3">
         <h2 class="text-2xl font-bold text-gray-800">Antrean Pasien</h2>
-        <span class="text-sm text-gray-500">{{ now()->isoFormat('dddd, D MMMM Y') }}</span>
+        <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">{{ now()->isoFormat('dddd, D MMMM Y') }}</span>
+            @if(Auth::user()->role == 'admin' || Auth::user()->role == 'pendaftaran')
+            <div class="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
+                <input type="date" id="resetDate" class="px-3 py-1.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm">
+                <button onclick="confirmReset()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Antrean
+                </button>
+            </div>
+            @endif
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -24,6 +35,7 @@
                         <th class="pb-3 font-medium px-2">No. Antrean</th>
                         <th class="pb-3 font-medium px-2">No. RM</th>
                         <th class="pb-3 font-medium px-2">Nama Pasien</th>
+                        <th class="pb-3 font-medium px-2">Dokter</th>
                         <th class="pb-3 font-medium px-2">Status</th>
                         <th class="pb-3 font-medium px-2">Waktu Daftar</th>
                         <th class="pb-3 font-medium px-2">Aksi</th>
@@ -40,6 +52,16 @@
                         <td class="py-4 px-2 text-gray-600 font-mono">{{ $queue->patient->medical_record_number ?? '-' }}</td>
                         <td class="py-4 px-2">
                             <span class="font-medium {{ $queue->status == 'batal' ? 'text-gray-400 line-through' : 'text-gray-800' }}">{{ $queue->patient->name ?? '-' }}</span>
+                        </td>
+                        <td class="py-4 px-2">
+                            @if($queue->doctorProfile)
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xs uppercase">{{ substr($queue->doctorProfile->full_name, 0, 1) }}</span>
+                                <span class="text-gray-600 text-xs">{{ $queue->doctorProfile->full_name }}</span>
+                            </div>
+                            @else
+                            <span class="text-gray-400">-</span>
+                            @endif
                         </td>
                         <td class="py-4 px-2">
                             @php
@@ -83,7 +105,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-12 text-center text-gray-400">Tidak ada antrean hari ini</td>
+                        <td colspan="7" class="py-12 text-center text-gray-400">Tidak ada antrean hari ini</td>
                     </tr>
                     @endforelse
                 </tbody>

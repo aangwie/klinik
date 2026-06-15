@@ -15,10 +15,9 @@
     <div class="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-3 text-sm">{{ session('error') }}</div>
     @endif
 
-    <!-- TAB TOTAL PEMBAYARAN -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-1">Semua Pembayaran Menunggu</h3>
-        <p class="text-sm text-gray-500 mb-4">Total keseluruhan biaya yang harus dibayar pasien</p>
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">Pembayaran Total (Jasa + Obat)</h3>
+        <p class="text-sm text-gray-500 mb-4">Pembayaran mencakup biaya konsultasi, tindakan, dan obat-obatan</p>
         <div class="overflow-x-auto">
             <table class="datatable w-full text-sm">
                 <thead>
@@ -55,7 +54,7 @@
                                 <button onclick="openTotalPaymentModal({{ $dp->id }}, {{ $dp->grand_total ?? $dp->total }}, '{{ $dp->patient->name }}')"
                                     class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors">Bayar</button>
                                 @elseif($dp->status == 'lunas')
-                                <button onclick="printStruk('doctor', {{ $dp->id }})"
+                                <button onclick="printStruk({{ $dp->id }})"
                                     class="px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium rounded-lg transition-colors">Struk</button>
                                 @endif
                             </div>
@@ -82,7 +81,6 @@
             </button>
         </div>
         <div id="detailContent" class="space-y-4">
-            <!-- Loading state -->
             <div class="text-center py-8 text-gray-400">Memuat data...</div>
         </div>
     </div>
@@ -126,123 +124,107 @@
 
 @push('scripts')
 <script>
-    function openDetailModal(doctorPaymentId) {
-        document.getElementById('detailModal').classList.remove('hidden');
-        document.getElementById('detailModal').classList.add('flex');
-        document.getElementById('detailContent').innerHTML = '<div class="text-center py-8 text-gray-400">Memuat data...</div>';
+function openDetailModal(doctorPaymentId) {
+    document.getElementById('detailModal').classList.remove('hidden');
+    document.getElementById('detailModal').classList.add('flex');
+    document.getElementById('detailContent').innerHTML = '<div class="text-center py-8 text-gray-400">Memuat data...</div>';
 
-        fetch(`/payment/detail/${doctorPaymentId}`)
-            .then(res => res.json())
-            .then(data => {
-                let html = `
-                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                        <p class="text-xs text-gray-500">Pasien</p>
-                        <p class="font-semibold text-gray-800">${data.patient.name} (${data.patient.medical_record_number})</p>
+    fetch(`/payment/detail/${doctorPaymentId}`)
+        .then(res => res.json())
+        .then(data => {
+            let html = `
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <p class="text-xs text-gray-500">Pasien</p>
+                    <p class="font-semibold text-gray-800">${data.patient.name} (${data.patient.medical_record_number})</p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-medium text-gray-800 mb-3">Jasa & Tindakan Dokter</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Biaya Konsultasi</span>
+                            <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.consultation_fee)}</span>
+                        </div>
+                        ${data.actions ? `
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Tindakan: ${data.actions}</span>
+                            <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.action_fee)}</span>
+                        </div>` : ''}
+                        <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
+                            <span class="font-medium text-gray-700">Subtotal Jasa</span>
+                            <span class="font-semibold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.total)}</span>
+                        </div>
                     </div>
-                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-800 mb-3">Jasa & Tindakan Dokter</h4>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Biaya Konsultasi</span>
-                                <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.consultation_fee)}</span>
-                            </div>
-                            ${data.actions ? `
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Tindakan: ${data.actions}</span>
-                                <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.action_fee)}</span>
-                            </div>` : ''}
-                            <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
-                                <span class="font-medium text-gray-700">Subtotal Jasa</span>
-                                <span class="font-semibold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.total)}</span>
-                            </div>
-                        </div>
-                    </div>`;
+                </div>`;
 
-                if (data.medicines && data.medicines.length > 0) {
-                    html += `
-                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-800 mb-3">Obat-obatan</h4>
-                        <div class="space-y-2">
-                            ${data.medicines.map(m => `
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">${m.name} x${m.qty}</span>
-                                <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(m.subtotal)}</span>
-                            </div>`).join('')}
-                            <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
-                                <span class="font-medium text-gray-700">Subtotal Obat</span>
-                                <span class="font-semibold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.medicine_total)}</span>
-                            </div>
-                        </div>
-                    </div>`;
-                }
-
-                if (data.pharmacy_payments && data.pharmacy_payments.length > 0) {
-                    data.pharmacy_payments.forEach(pp => {
-                        if (pp.status === 'menunggu_pembayaran' || pp.status === 'lunas') {
-                            html += `
-                            <div class="border border-gray-200 rounded-lg p-4 mb-4">
-                                <h4 class="font-medium text-gray-800 mb-3">Pembayaran Obat (Apotek)</h4>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">${pp.medicine_name}</span>
-                                    <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(pp.total)}</span>
-                                </div>
-                            </div>`;
-                        }
-                    });
-                }
-
+            if (data.medicines && data.medicines.length > 0) {
                 html += `
-                    <div class="bg-emerald-50 rounded-lg p-4">
-                        <div class="flex justify-between items-center">
-                            <span class="font-semibold text-gray-800">Grand Total</span>
-                            <span class="text-xl font-bold text-emerald-600">Rp ${new Intl.NumberFormat('id-ID').format(data.grand_total)}</span>
+                <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-medium text-gray-800 mb-3">Obat-obatan</h4>
+                    <div class="space-y-2">
+                        ${data.medicines.map(m => `
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">${m.name} x${m.qty}</span>
+                            <span class="font-medium text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(m.subtotal)}</span>
+                        </div>`).join('')}
+                        <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
+                            <span class="font-medium text-gray-700">Subtotal Obat</span>
+                            <span class="font-semibold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(data.medicine_total)}</span>
                         </div>
-                        <div class="flex justify-between text-sm mt-2">
-                            <span class="text-gray-500">Status</span>
-                            <span class="font-medium ${data.status === 'lunas' ? 'text-emerald-600' : 'text-amber-600'}">${data.status === 'lunas' ? 'Lunas' : 'Menunggu Pembayaran'}</span>
-                        </div>
-                        ${data.payment_method ? `<div class="flex justify-between text-sm mt-1"><span class="text-gray-500">Metode</span><span class="font-medium text-gray-700 uppercase">${data.payment_method}</span></div>` : ''}
                     </div>
-                    <div class="flex justify-end pt-2">
-                        <button onclick="closeDetailModal()" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">Tutup</button>
-                    </div>`;
+                </div>`;
+            }
 
-                document.getElementById('detailContent').innerHTML = html;
-            })
-            .catch(() => {
-                document.getElementById('detailContent').innerHTML = '<div class="text-center py-8 text-red-400">Gagal memuat data</div>';
-            });
-    }
+            html += `
+                <div class="bg-emerald-50 rounded-lg p-4">
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold text-gray-800">Grand Total</span>
+                        <span class="text-xl font-bold text-emerald-600">Rp ${new Intl.NumberFormat('id-ID').format(data.grand_total)}</span>
+                    </div>
+                    <div class="flex justify-between text-sm mt-2">
+                        <span class="text-gray-500">Status</span>
+                        <span class="font-medium ${data.status === 'lunas' ? 'text-emerald-600' : 'text-amber-600'}">${data.status === 'lunas' ? 'Lunas' : 'Menunggu Pembayaran'}</span>
+                    </div>
+                    ${data.payment_method ? `<div class="flex justify-between text-sm mt-1"><span class="text-gray-500">Metode</span><span class="font-medium text-gray-700 uppercase">${data.payment_method}</span></div>` : ''}
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button onclick="closeDetailModal()" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">Tutup</button>
+                </div>`;
 
-    function closeDetailModal() {
-        document.getElementById('detailModal').classList.add('hidden');
-        document.getElementById('detailModal').classList.remove('flex');
-    }
+            document.getElementById('detailContent').innerHTML = html;
+        })
+        .catch(() => {
+            document.getElementById('detailContent').innerHTML = '<div class="text-center py-8 text-red-400">Gagal memuat data</div>';
+        });
+}
 
-    function openTotalPaymentModal(doctorPaymentId, total, patientName) {
-        document.getElementById('totalPaymentDoctorId').value = doctorPaymentId;
-        document.getElementById('totalPaymentAmount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
-        document.getElementById('totalPaymentPatientName').textContent = patientName;
-        document.getElementById('totalPaymentModal').classList.remove('hidden');
-        document.getElementById('totalPaymentModal').classList.add('flex');
-    }
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.add('hidden');
+    document.getElementById('detailModal').classList.remove('flex');
+}
 
-    function closeTotalPaymentModal() {
-        document.getElementById('totalPaymentModal').classList.add('hidden');
-        document.getElementById('totalPaymentModal').classList.remove('flex');
-    }
+function openTotalPaymentModal(doctorPaymentId, total, patientName) {
+    document.getElementById('totalPaymentDoctorId').value = doctorPaymentId;
+    document.getElementById('totalPaymentAmount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+    document.getElementById('totalPaymentPatientName').textContent = patientName;
+    document.getElementById('totalPaymentModal').classList.remove('hidden');
+    document.getElementById('totalPaymentModal').classList.add('flex');
+}
 
-    function printStruk(type, id) {
-        window.open(`/payment/${type}/struk/${id}`, '_blank', 'width=400,height=600');
-    }
+function closeTotalPaymentModal() {
+    document.getElementById('totalPaymentModal').classList.add('hidden');
+    document.getElementById('totalPaymentModal').classList.remove('flex');
+}
 
-    // Click outside to close modals
-    document.getElementById('detailModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeDetailModal();
-    });
-    document.getElementById('totalPaymentModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeTotalPaymentModal();
-    });
+function printStruk(id) {
+    window.open(`/payment/struk/${id}`, '_blank', 'width=400,height=700');
+}
+
+document.getElementById('detailModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeDetailModal();
+});
+document.getElementById('totalPaymentModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeTotalPaymentModal();
+});
 </script>
 @endpush
 @endsection

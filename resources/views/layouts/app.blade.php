@@ -43,11 +43,12 @@
                             'Rekam Medis' => ['route' => 'medical-record.index', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                             'Laporan' => ['route' => 'report.index', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                             'Jasa/Tindakan' => ['route' => 'service-action.index', 'icon' => 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z'],
+                            'Profil Dokter' => ['route' => 'doctor-profile.index', 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
                             'Pengguna' => ['route' => 'user.index', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z'],
                         ];
                         // Filter menu based on role
                         $roleMenus = [
-                            'admin' => ['Dashboard', 'Pendaftaran', 'Antrean', 'Pemeriksaan', 'Pembayaran', 'Apotek', 'Obat', 'Rekam Medis', 'Laporan', 'Jasa/Tindakan', 'Pengguna'],
+                            'admin' => ['Dashboard', 'Pendaftaran', 'Antrean', 'Pemeriksaan', 'Pembayaran', 'Apotek', 'Obat', 'Rekam Medis', 'Laporan', 'Jasa/Tindakan', 'Profil Dokter', 'Pengguna'],
                             'pendaftaran' => ['Dashboard', 'Pendaftaran', 'Antrean'],
                             'dokter' => ['Dashboard', 'Antrean', 'Pemeriksaan', 'Rekam Medis'],
                             'kasir' => ['Dashboard', 'Pembayaran'],

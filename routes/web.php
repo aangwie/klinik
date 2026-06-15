@@ -13,6 +13,7 @@ use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServiceActionController;
+use App\Http\Controllers\DoctorProfileController;
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
@@ -36,12 +37,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/queue', [QueueController::class, 'index'])->name('queue.index');
     Route::post('/queue/{id}/call', [QueueController::class, 'call'])->name('queue.call');
     Route::post('/queue/{id}/cancel', [QueueController::class, 'cancel'])->name('queue.cancel');
+    Route::post('/queue/reset-by-date', [QueueController::class, 'resetByDate'])->name('queue.reset');
 
     // Examination (Pemeriksaan)
     Route::get('/examination', [ExaminationController::class, 'index'])->name('examination.index');
     Route::get('/examination/create/{patientId}', [ExaminationController::class, 'create'])->name('examination.create');
     Route::post('/examination', [ExaminationController::class, 'store'])->name('examination.store');
     Route::get('/examination/{id}', [ExaminationController::class, 'show'])->name('examination.show');
+    Route::put('/examination/{id}/update-fee', [ExaminationController::class, 'updateFee'])->name('examination.update-fee');
 
     // Payment (Pembayaran)
     Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
@@ -51,7 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/detail/{id}', [PaymentController::class, 'getDetail'])->name('payment.detail');
     Route::get('/payment/doctor/fee/{id}/edit', [PaymentController::class, 'getEditFee'])->name('payment.fee.edit');
     Route::put('/payment/doctor/fee/{id}', [PaymentController::class, 'updateDoctorPaymentFee'])->name('payment.fee.update');
-    Route::get('/payment/{type}/struk/{id}', [PaymentController::class, 'printStruk'])->name('payment.struk');
+    Route::get('/payment/struk/{id}', [PaymentController::class, 'printStruk'])->name('payment.struk');
 
     // Pharmacy (Apotek)
     Route::get('/pharmacy', [PharmacyController::class, 'index'])->name('pharmacy.index');
@@ -81,6 +84,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/service-action/{id}', [ServiceActionController::class, 'update'])->name('service-action.update');
     Route::post('/service-action/{id}/toggle', [ServiceActionController::class, 'toggleActive'])->name('service-action.toggle');
     Route::delete('/service-action/{id}', [ServiceActionController::class, 'destroy'])->name('service-action.destroy');
+
+    // Doctor Profile (Profil Dokter)
+    Route::get('/doctor-profile', [DoctorProfileController::class, 'index'])->name('doctor-profile.index');
+    Route::post('/doctor-profile', [DoctorProfileController::class, 'store'])->name('doctor-profile.store');
+    Route::get('/doctor-profile/{id}/edit', [DoctorProfileController::class, 'edit'])->name('doctor-profile.edit');
+    Route::put('/doctor-profile/{id}', [DoctorProfileController::class, 'update'])->name('doctor-profile.update');
+    Route::delete('/doctor-profile/{id}', [DoctorProfileController::class, 'destroy'])->name('doctor-profile.destroy');
+    Route::post('/doctor-profile/{id}/toggle-availability', [DoctorProfileController::class, 'toggleAvailability'])->name('doctor-profile.toggle');
 
     // User Management (Pengguna) - Admin only
     Route::middleware('role:admin')->group(function () {

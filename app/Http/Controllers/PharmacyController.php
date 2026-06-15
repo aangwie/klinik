@@ -13,7 +13,7 @@ class PharmacyController extends Controller
 {
     public function index()
     {
-        // Get all examinations that have prescriptions waiting/processing
+        // Only show prescriptions that are paid (diproses) - ready for pickup
         $examinations = Examination::with([
             'patient',
             'doctor',
@@ -23,29 +23,15 @@ class PharmacyController extends Controller
             'doctorPayment'
         ])
             ->whereHas('prescriptions', function($q) {
-                $q->whereIn('status', ['menunggu', 'diproses']);
+                $q->whereIn('status', ['diproses', 'selesai']);
+            })
+            ->whereHas('doctorPayment', function($q) {
+                $q->where('status', 'lunas');
             })
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Flag: can only process if doctor payment is lunas OR for same patient no pending doctor payment
-        foreach ($examinations as $exam) {
-            $exam->can_process = true;
-            if ($exam->doctorPayment && $exam->doctorPayment->status == 'menunggu') {
-                $exam->can_process = false;
-            }
-        }
-
         return view('pharmacy.index', compact('examinations'));
-    }
-
-    public function process($id)
-    {
-        $prescription = Prescription::findOrFail($id);
-        $prescription->update(['status' => 'diproses']);
-
-        return redirect()->route('pharmacy.index')
-            ->with('success', 'Resep sedang diproses');
     }
 
     public function complete($id)
@@ -54,16 +40,12 @@ class PharmacyController extends Controller
 
         DB::beginTransaction();
         try {
-            $total = $prescription->qty * $prescription->medicine->selling_price;
+            // Reduce stock
+            $medicine = Medicine::findOrFail($prescription->medicine_id);
+            $medicine->decrement('stock', $prescription->qty);
 
-            PharmacySale::create([
-                'prescription_id' => $prescription->id,
-                'patient_id' => $prescription->examination->patient_id,
-                'total' => $total,
-                'status' => 'menunggu',
-            ]);
-
-            $prescription->update(['status' => 'menunggu_pembayaran']);
+            // Mark as completed
+            $prescription->update(['status' => 'selesai']);
 
             DB::commit();
         } catch (\Exception $e) {
@@ -72,6 +54,6 @@ class PharmacyController extends Controller
         }
 
         return redirect()->route('pharmacy.index')
-            ->with('success', 'Obat siap, menunggu pembayaran');
+            ->with('success', "{$prescription->medicine->name} x{$prescription->qty} sudah diserahkan ke pasien");
     }
 }

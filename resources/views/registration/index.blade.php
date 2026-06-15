@@ -28,7 +28,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
-            <!-- Progress bar -->
             <div class="absolute bottom-0 left-0 h-1 bg-emerald-400/50 rounded-full toast-progress"></div>
         </div>
     </div>
@@ -43,6 +42,19 @@
             <form method="POST" action="{{ route('registration.store') }}" class="space-y-4">
                 @csrf
                 <input type="hidden" name="type" value="new">
+
+                <!-- Pilih Dokter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Dokter <span class="text-red-500">*</span></label>
+                    <select name="doctor_profile_id" required
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all duration-200">
+                        <option value="">-- Pilih Dokter Tujuan --</option>
+                        @foreach($doctors as $d)
+                        <option value="{{ $d->id }}">{{ $d->full_name }} ({{ $d->specialization ?? 'Umum' }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIK <span class="text-red-500">*</span></label>
                     <input type="text" name="nik" value="{{ old('nik') }}" required maxlength="16"
@@ -127,6 +139,16 @@
                 @csrf
                 <input type="hidden" name="type" value="existing">
                 <input type="hidden" name="patient_id" id="patientId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Dokter <span class="text-red-500">*</span></label>
+                    <select name="doctor_profile_id" id="existingDoctorSelect" required
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all duration-200">
+                        <option value="">-- Pilih Dokter Tujuan --</option>
+                        @foreach($doctors as $d)
+                        <option value="{{ $d->id }}">{{ $d->full_name }} ({{ $d->specialization ?? 'Umum' }})</option>
+                        @endforeach
+                    </select>
+                </div>
                 <button type="submit" id="btnTakeQueue"
                     class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 shadow-lg shadow-emerald-200">
                     Ambil Antrean
@@ -138,28 +160,12 @@
 
 @push('styles')
 <style>
-    .patient-result {
-        cursor: pointer;
-    }
-    .patient-result.selected {
-        @apply bg-emerald-50 border-emerald-300;
-    }
-
-    /* Toast Animation */
-    @keyframes toastSlideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes toastProgress {
-        from { width: 100%; }
-        to { width: 0%; }
-    }
-    #successToast {
-        animation: toastSlideIn 0.4s ease-out;
-    }
-    .toast-progress {
-        animation: toastProgress 5s linear forwards;
-    }
+    .patient-result { cursor: pointer; }
+    .patient-result.selected { @apply bg-emerald-50 border-emerald-300; }
+    @keyframes toastSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
+    #successToast { animation: toastSlideIn 0.4s ease-out; }
+    .toast-progress { animation: toastProgress 5s linear forwards; }
 </style>
 @endpush
 
@@ -173,10 +179,7 @@
 
     async function searchPatient() {
         const query = document.getElementById('searchPatient').value;
-        if (query.length < 2) {
-            document.getElementById('searchResults').innerHTML = '';
-            return;
-        }
+        if (query.length < 2) { document.getElementById('searchResults').innerHTML = ''; return; }
 
         try {
             const response = await fetch(`/api/patients/search?q=${encodeURIComponent(query)}`);
@@ -199,31 +202,21 @@
                     </div>
                 </div>
             `).join('');
-        } catch (error) {
-            console.error('Search failed:', error);
-        }
+        } catch (error) { console.error('Search failed:', error); }
     }
 
     function selectPatient(id, rm, name) {
         document.querySelectorAll('.patient-result').forEach(el => el.classList.remove('selected', 'bg-emerald-50', 'border-emerald-300'));
         event.currentTarget.classList.add('selected', 'bg-emerald-50', 'border-emerald-300');
-
         document.getElementById('patientId').value = id;
         document.getElementById('existingPatientForm').classList.remove('hidden');
         document.getElementById('btnTakeQueue').textContent = `Ambil Antrean - ${name}`;
     }
 
-    // Auto dismiss toast after 5 seconds
     function dismissToast() {
         const toast = document.getElementById('successToast');
-        if (toast) {
-            toast.style.transform = 'translateX(100%)';
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 500);
-        }
+        if (toast) { toast.style.transform = 'translateX(100%)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }
     }
-
-    // Auto dismiss after animation ends
     setTimeout(dismissToast, 5000);
 </script>
 @endpush
