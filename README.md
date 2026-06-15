@@ -2,6 +2,8 @@
 
 Sistem informasi manajemen klinik / praktik dokter umum berbasis web yang dibangun menggunakan **Laravel 11**. Aplikasi ini dirancang untuk membantu pengelolaan operasional klinik mulai dari pendaftaran pasien, antrean, pemeriksaan, resep obat, apotek, pembayaran, hingga laporan dan analisis data.
 
+![Login](/raw/login.png)
+
 ---
 
 ## ✨ Fitur-Fitur
@@ -11,12 +13,17 @@ Sistem informasi manajemen klinik / praktik dokter umum berbasis web yang dibang
 - Manajemen pengguna (CRUD) khusus admin
 - Middleware berbasis role untuk keamanan akses
 
+![Manajemen User](/raw/manajemen%20user.png)
+
 ### 📋 Pendaftaran & Antrean
 - Pendaftaran pasien baru / lama
 - Pencarian pasien (berdasarkan nama/NIK/no. RM) dengan TomSelect
 - Generate nomor antrean otomatis per hari
 - Status antrean: Menunggu → Dipanggil → Selesai / Batal
 - Reset antrean per tanggal
+
+![Pendaftaran Pasien](/raw/pedafatran%20pasien.png)
+![Antrean](/raw/antrian.png)
 
 ### 🩺 Pemeriksaan Pasien
 - Input keluhan, diagnosa, dan tanda vital
@@ -25,11 +32,15 @@ Sistem informasi manajemen klinik / praktik dokter umum berbasis web yang dibang
 - Otomatis mengecualikan obat yang sudah expired
 - Riwayat pemeriksaan per pasien
 
+![Pemeriksaan Pasien](/raw/Permeriksaan%20Pasien.png)
+
 ### 💊 Manajemen Obat
 - CRUD obat dengan kode, kategori, satuan, stok, harga
 - **Batas minimal stok** untuk notifikasi re-order
 - **Warna baris otomatis**: 🔴 Merah (expired), 🟡 Kuning (akan expired ≤ 6 bulan), ⚪ Normal
 - Export data obat ke CSV
+
+![Manajemen Obat](/raw/manajemen%20obat.png)
 
 ### 💵 Pembayaran
 - Pembayaran jasa dokter (konsultasi + tindakan)
@@ -37,10 +48,16 @@ Sistem informasi manajemen klinik / praktik dokter umum berbasis web yang dibang
 - Struk pembayaran yang bisa di-print
 - Riwayat dan status pembayaran
 
+![Pembayaran](/raw/Pembayaran.png)
+![Metode Pembayaran](/raw/Metode%20Pembayaran.png)
+![Rincian Pembayaran](/raw/rincian%20pembayaran.png)
+
 ### 🏪 Apotek
 - Daftar resep obat yang menunggu
 - Proses serah obat ke pasien
 - Update status resep: Menunggu → Diproses → Selesai
+
+![Apotek](/raw/apotek.png)
 
 ### 📊 Laporan & Analisis
 - **Laporan Harian** (filter rentang tanggal: start_date - end_date)
@@ -51,20 +68,35 @@ Sistem informasi manajemen klinik / praktik dokter umum berbasis web yang dibang
 - **⚠️ Stok Menipis** - Obat dengan stok ≤ batas minimal (re-order alert)
 - **⏰ Akan Expired** - Obat yang akan expired ≤ 6 bulan
 
+![Laporan](/raw/laporan.png)
+
 ### 📄 Rekam Medis
 - Riwayat kunjungan lengkap per pasien
 - Cetak PDF rekam medis
+
+![Rekam Medis](/raw/rekam-medik.png)
+![Rekam Medis Detail](/raw/rekam-medik-detail.png)
+
+### 👨‍⚕️ Profil Dokter
+- Manajemen data dokter
+- Pengaturan jadwal praktik & ketersediaan
+
+![Profil Dokter](/raw/profil_dokter.png)
 
 ### ⚙️ Pengaturan Website
 - Ubah **Nama Website** (real-time di sidebar)
 - Upload **Logo** (format gambar, max 500KB, disimpan sebagai base64)
 - Logo muncul di: favicon, sidebar, struk pembayaran, PDF rekam medis
 
+![Pengaturan Website](/raw/manajmen-website.png)
+
 ### 🎨 Tampilan
 - **Sidebar collapsible** (minimize/expand) dengan state tersimpan di localStorage
 - Warna hijau (emerald) yang profesional
 - Responsive design (Desktop & Mobile)
 - Support TomSelect untuk multi-select & searchable dropdown
+
+![Dashboard](/raw/dashboard.png)
 
 ---
 
